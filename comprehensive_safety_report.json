@@ -1,0 +1,85 @@
+{
+    "hotel_info": {
+        "name": "Radisson Blu Hotel, Pune Kharadi",
+        "rating": 4.4,
+        "total_reviews": 15388,
+        "address": "Nagar Bypass Road, Pandhari Nagar, Kharadi, Pune, Maharashtra 411014, India",
+        "coordinates": {
+            "latitude": 18.553393099999997,
+            "longitude": 73.93793459999999
+        },
+        "types": [
+            "Hotel"
+        ]
+    },
+    "safety_score": 82,
+    "verdict": "SAFE for family stay",
+    "score_breakdown": {
+        "base_score": 50,
+        "rating_bonus": 15,
+        "infrastructure_bonus": 10,
+        "negative_penalty": 3,
+        "final_score": 82
+    },
+    "infrastructure": {
+        "street_lights": 0,
+        "police_stations": 0,
+        "hospitals": 13,
+        "fire_stations": 0,
+        "roads_nearby": 331
+    },
+    "review_sources": {
+        "google_maps": 0,
+        "twitter": 0,
+        "reddit": 5,
+        "total": 5
+    },
+    "negative_review_count": 1,
+    "ai_analysis": {
+        "error": "API returned status 404",
+        "details": "{\n  \"error\": {\n    \"code\": 404,\n    \"message\": \"models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.\",\n    \"status\": \"NOT_FOUND\"\n  }\n}\n",
+        "assessment": "Error",
+        "concerns": [],
+        "positives": [],
+        "recommendations": [],
+        "confidence_score": 0
+    },
+    "all_reviews": [
+        {
+            "source": "Reddit",
+            "text": "Real bad experience at the Radisson Blu Hotel, Kochi - TL;DR: Misleading photos, woeful hygiene and maintenance, mould, and BEDBUGS. I changed rooms twice before cancelling my 5-day stay on the ...",
+            "link": "https://www.reddit.com/r/Hotels_India/comments/1ohiosv/real_bad_experience_at_the_radisson_blu_hotel/"
+        },
+        {
+            "source": "Reddit",
+            "text": "Shocking 5-star hotel dining experience. : r/pune - Booked a New Year buffet at a 5-star in Kharadi through a food app. Price shown was ₹2100 for two + 50% offer, but final billing was ₹2495 + ...",
+            "link": "https://www.reddit.com/r/pune/comments/1q0f42s/shocking_5star_hotel_dining_experience/"
+        },
+        {
+            "source": "Reddit",
+            "text": "Work Visit end of Jan : r/pune - We are staying at the Radisson Blu hotel since it's close to our office. edit it's this one: Hotel RADISSON HOTEL PUNE KHARADI. I have been ...",
+            "link": "https://www.reddit.com/r/pune/comments/aaxurq/work_visit_end_of_jan/"
+        },
+        {
+            "source": "Reddit",
+            "text": "Is kharadi really that bad?? : r/pune - Kharadi is bad period. The Chandan nagar location and that radisson blue hotel signal is bad. No greenery only cement my sense of smell has ...",
+            "link": "https://www.reddit.com/r/pune/comments/1ciahlx/is_kharadi_really_that_bad/"
+        },
+        {
+            "source": "Reddit",
+            "text": "Which hotel is the best for a luxury stay in Pune? Budget ... - Ritz tops the list followed by Conrad and Sherton. If travel not an issue I would highly recommend Le Meridian at Mahabaleshwar.",
+            "link": "https://www.reddit.com/r/pune/comments/1hl7p5p/which_hotel_is_the_best_for_a_luxury_stay_in_pune/"
+        }
+    ],
+    "generated_at": "2026-01-16T17:23:33.223235",
+    "analysis_metadata": {
+        "version": "2.0",
+        "ai_model": "Gemini 1.5 Flash",
+        "data_sources": [
+            "Google Maps",
+            "Twitter/X",
+            "Reddit",
+            "OpenStreetMap"
+        ]
+    }
+}

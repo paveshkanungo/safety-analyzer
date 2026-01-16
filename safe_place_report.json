@@ -1,0 +1,20 @@
+{
+    "name": "Radisson Blu Hotel, Pune Kharadi",
+    "rating": 4.4,
+    "total_reviews": 15387,
+    "address": "Nagar Bypass Road, Pandhari Nagar, Kharadi, Pune, Maharashtra 411014, India",
+    "coordinates": {
+        "latitude": 18.553393099999997,
+        "longitude": 73.93793459999999
+    },
+    "reviews": [],
+    "negative_review_count": 0,
+    "infrastructure": {
+        "street_lights": 0,
+        "police_stations": 0,
+        "hospitals": 13,
+        "roads_nearby": 331
+    },
+    "safety_score": 85,
+    "verdict": "SAFE for family stay"
+}

@@ -1,0 +1,21 @@
+# Virtual environment
+venv/
+pyvenv.cfg
+
+# Environment variables (secrets)
+.env
+.env.*
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated reports / outputs
+*.json
+
+# OS / Editor files
+.DS_Store
+.vscode/
+.idea/
