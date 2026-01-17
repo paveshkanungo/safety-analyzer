@@ -6,20 +6,37 @@ from serpapi import GoogleSearch
 from config import *
 
 
-def fetch_google_maps_data():
-    """Fetch place data and reviews from Google Maps"""
-    params = {
+def fetch_google_maps_data(query=QUERY, location=LOCATION):
+    """Fetch place data and reviews from Google Maps using two-step approach"""
+    
+    # Step 1: Search for the place (without ll parameter which causes issues)
+    search_params = {
         "engine": "google_maps",
         "type": "search",
-        "q": QUERY,
-        "ll": LOCATION,
+        "q": query,
         "hl": "en",
         "api_key": SERPAPI_KEY
     }
     
-    results = GoogleSearch(params).get_dict()
-    place = results.get("place_results", {})
-    reviews_section = results.get("user_reviews", {})
+    results = GoogleSearch(search_params).get_dict()
+    
+    # Debug: Print what we got from SerpAPI
+    if "error" in results:
+        print(f"   ⚠️ SerpAPI Search Error: {results.get('error')}")
+    
+    # Get the first local result (the hotel we're looking for)
+    local_results = results.get("local_results", [])
+    place = {}
+    data_id = None
+    
+    if local_results:
+        place = local_results[0]
+        data_id = place.get("data_id")
+        print(f"   ✓ Found place: {place.get('title')} (data_id: {data_id[:20] if data_id else 'N/A'}...)")
+    else:
+        # Try place_results as fallback
+        place = results.get("place_results", {})
+        data_id = place.get("data_id")
     
     place_data = {
         "name": place.get("title"),
@@ -31,38 +48,64 @@ def fetch_google_maps_data():
     }
     
     reviews = []
-    for r in reviews_section.get("most_relevant", []):
-        reviews.append({
-            "source": "Google Maps",
-            "rating": r.get("rating"),
-            "text": r.get("description", ""),
-            "date": r.get("date", ""),
-            "author": r.get("user", {}).get("name", "Anonymous")
-        })
+    
+    # Step 2: Fetch reviews using data_id if available
+    if data_id:
+        try:
+            reviews_params = {
+                "engine": "google_maps_reviews",
+                "data_id": data_id,
+                "hl": "en",
+                "api_key": SERPAPI_KEY
+            }
+            
+            reviews_results = GoogleSearch(reviews_params).get_dict()
+            
+            if "error" in reviews_results:
+                print(f"   ⚠️ SerpAPI Reviews Error: {reviews_results.get('error')}")
+            else:
+                reviews_data = reviews_results.get("reviews", [])
+                for r in reviews_data[:MAX_REVIEWS_TO_ANALYZE]:
+                    reviews.append({
+                        "source": "Google Maps",
+                        "rating": r.get("rating"),
+                        "text": r.get("snippet", r.get("text", "")),
+                        "date": r.get("date", ""),
+                        "author": r.get("user", {}).get("name", "Anonymous")
+                    })
+        except Exception as e:
+            print(f"   ⚠️ Could not fetch reviews: {e}")
     
     return place_data, reviews
 
 
 def fetch_twitter_reviews(hotel_name):
-    """Fetch tweets mentioning the hotel"""
+    """Fetch Twitter/X mentions using Google search (since Twitter engine is unsupported)"""
     params = {
-        "engine": "twitter",
-        "q": f"{hotel_name} hotel review OR experience OR stay",
-        "api_key": SERPAPI_KEY
+        "engine": "google",
+        "q": f"{hotel_name} hotel (site:twitter.com OR site:x.com)",
+        "api_key": SERPAPI_KEY,
+        "num": MAX_TWEETS
     }
     
     try:
         results = GoogleSearch(params).get_dict()
-        tweets = results.get("organic_results", [])
+        
+        # Debug: Check for errors
+        if "error" in results:
+            print(f"   ⚠️ SerpAPI Twitter Search Error: {results.get('error')}")
+            return []
+        
+        search_results = results.get("organic_results", [])
         
         social_reviews = []
-        for tweet in tweets[:MAX_TWEETS]:
+        for result in search_results[:MAX_TWEETS]:
             social_reviews.append({
                 "source": "Twitter/X",
-                "text": tweet.get("snippet", ""),
-                "author": tweet.get("user", {}).get("name", "Anonymous"),
-                "date": tweet.get("date", ""),
-                "link": tweet.get("link", "")
+                "text": result.get("snippet", ""),
+                "author": result.get("title", "").split(" on X:")[0] if " on X:" in result.get("title", "") else "Anonymous",
+                "date": "",
+                "link": result.get("link", "")
             })
         
         return social_reviews
@@ -98,53 +141,80 @@ def fetch_reddit_reviews(hotel_name):
         return []
 
 
-def fetch_infrastructure_data():
+def fetch_infrastructure_data(lat=LAT, lon=LON):
     """Fetch nearby infrastructure from OpenStreetMap"""
+    # Simplified query to reduce server load (removed street_lamp - too many results)
     query = f"""
-    [out:json];
+    [out:json][timeout:25];
     (
-      node["highway"="street_lamp"](around:800,{LAT},{LON});
-      node["amenity"="police"](around:1500,{LAT},{LON});
-      node["amenity"="hospital"](around:1500,{LAT},{LON});
-      way["highway"](around:800,{LAT},{LON});
-      node["emergency"="fire_station"](around:1500,{LAT},{LON});
+      node["amenity"="police"](around:1000,{lat},{lon});
+      node["amenity"="hospital"](around:1000,{lat},{lon});
+      node["emergency"="fire_station"](around:1000,{lat},{lon});
+      way["highway"~"primary|secondary|tertiary"](around:500,{lat},{lon});
     );
+    out count;
     out;
     """
     
-    try:
-        osm_response = requests.post(OVERPASS_URL, data=query, timeout=30).json()
-        elements = osm_response.get("elements", [])
-        
-        infrastructure = {
-            "street_lights": 0,
-            "police_stations": 0,
-            "hospitals": 0,
-            "fire_stations": 0,
-            "roads_nearby": 0
-        }
-        
-        for el in elements:
-            tags = el.get("tags", {})
-            if tags.get("highway") == "street_lamp":
-                infrastructure["street_lights"] += 1
-            elif tags.get("amenity") == "police":
-                infrastructure["police_stations"] += 1
-            elif tags.get("amenity") == "hospital":
-                infrastructure["hospitals"] += 1
-            elif tags.get("emergency") == "fire_station":
-                infrastructure["fire_stations"] += 1
-            elif tags.get("highway"):
-                infrastructure["roads_nearby"] += 1
-        
-        return infrastructure
+    # Overpass API endpoints to try (primary + fallback)
+    overpass_endpoints = [
+        OVERPASS_URL,
+        "https://overpass.kumi.systems/api/interpreter"  # Fallback endpoint
+    ]
     
-    except Exception as e:
-        print(f"Warning: Could not fetch infrastructure data - {e}")
-        return {
-            "street_lights": 0,
-            "police_stations": 0,
-            "hospitals": 0,
-            "fire_stations": 0,
-            "roads_nearby": 0
-        }
+    default_infrastructure = {
+        "street_lights": 0,
+        "police_stations": 0,
+        "hospitals": 0,
+        "fire_stations": 0,
+        "roads_nearby": 0
+    }
+    
+    for endpoint in overpass_endpoints:
+        try:
+            # Use 'data' parameter with proper content-type for Overpass API
+            headers = {"Content-Type": "application/x-www-form-urlencoded"}
+            osm_response = requests.post(endpoint, data={"data": query}, headers=headers, timeout=45)
+            
+            # Debug: Check response status
+            if osm_response.status_code == 504 or osm_response.status_code == 429:
+                print(f"   ⚠️ Overpass API ({endpoint}) returned {osm_response.status_code}, trying fallback...")
+                continue  # Try next endpoint
+            
+            if osm_response.status_code != 200:
+                print(f"   ⚠️ Overpass API returned status {osm_response.status_code}")
+                continue
+            
+            osm_data = osm_response.json()
+            elements = osm_data.get("elements", [])
+            
+            infrastructure = {
+                "street_lights": 0,
+                "police_stations": 0,
+                "hospitals": 0,
+                "fire_stations": 0,
+                "roads_nearby": 0
+            }
+            
+            for el in elements:
+                tags = el.get("tags", {})
+                if tags.get("highway") == "street_lamp":
+                    infrastructure["street_lights"] += 1
+                elif tags.get("amenity") == "police":
+                    infrastructure["police_stations"] += 1
+                elif tags.get("amenity") == "hospital":
+                    infrastructure["hospitals"] += 1
+                elif tags.get("emergency") == "fire_station":
+                    infrastructure["fire_stations"] += 1
+                elif tags.get("highway"):
+                    infrastructure["roads_nearby"] += 1
+            
+            return infrastructure
+        
+        except Exception as e:
+            print(f"Warning: Could not fetch from {endpoint} - {e}")
+            continue
+    
+    # All endpoints failed
+    print("   ⚠️ All Overpass API endpoints failed, using defaults")
+    return default_infrastructure

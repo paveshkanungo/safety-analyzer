@@ -12,7 +12,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Search Configuration
 QUERY = "Radisson Kharadi"
-LOCATION = "@18.5654075,73.9445731,15z"
+# SerpAPI google_maps expects ll as "@lat,lng,zoomz" format
+LOCATION = "@18.5654075,73.9445731,14z"
 LAT, LON = 18.5654075, 73.9445731
 
 # Safety Keywords
@@ -23,12 +24,12 @@ NEGATIVE_KEYWORDS = [
     "robbery", "crime", "violence", "unhygienic"
 ]
 
-# Scoring Parameters
-BASE_SCORE = 50
+# Scoring Parameters (adjusted for better hotels)
+BASE_SCORE = 60  # Increased base for established hotels
 RATING_WEIGHTS = {
-    "excellent": 15,  # >= 4 stars
-    "good": 5,        # >= 3 stars
-    "poor": -10       # < 3 stars
+    "excellent": 25,  # >= 4 stars (increased from 15)
+    "good": 10,       # >= 3 stars (increased from 5)
+    "poor": -15       # < 3 stars
 }
 
 INFRASTRUCTURE_WEIGHTS = {
@@ -46,14 +47,14 @@ MAX_FIRE_STATION_SCORE = 5
 MAX_NEGATIVE_REVIEW_PENALTY = 20
 NEGATIVE_REVIEW_PENALTY_PER_HIT = 3
 
-# Review Limits
-MAX_REVIEWS_TO_ANALYZE = 20
-MAX_TWEETS = 10
-MAX_REDDIT_POSTS = 5
+# Review Limits (targeting ~50 total reviews)
+MAX_REVIEWS_TO_ANALYZE = 20  # Max from Google Maps
+MAX_TWEETS = 15  # Max from Twitter/X
+MAX_REDDIT_POSTS = 15  # Max from Reddit
 
 # API URLs
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 # Output
 OUTPUT_FILE = "comprehensive_safety_report.json"

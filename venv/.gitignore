@@ -19,3 +19,7 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
+
+# Extra files
+.comprehensive_report.pdf
+.safe_place_report.pdf
