@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node / Frontend
+node_modules/
+dist/
+.npm
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# Mac
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Project Specific
+comprehensive_safety_report.json
+*.pdf
+.comprehensive_report.pdf
+.safe_place_report.pdf
